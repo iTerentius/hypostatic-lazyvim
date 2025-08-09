@@ -46,6 +46,15 @@ return {
           enabled = true,
         },
       },
+      extensions = {
+        tmux = {
+          path = vim.fn.tempname(),
+          horizontal = true,
+          size = "35%",
+          cmd = "tail",
+          args = { "-F", "$1" },
+        },
+      },
     })
   end,
 }
