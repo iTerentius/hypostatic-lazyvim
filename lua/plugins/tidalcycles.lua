@@ -8,6 +8,10 @@ return {
       vim.g.tidal_target = "terminal" -- default anyway
       -- DO NOT set vim.g.tidal_no_mappings here
       -- Temporarily DO NOT set vim.g.tidal_boot (use fallback)
+      vim.g.tidal_boot = vim.fn.expand("~/Music/tidal/_boot/BootTidal.hs")
+      vim.g.tidal_boot_fallback = vim.g.tidal_boot
+      vim.g.tidal_target = "terminal" -- or "tmux"
+      vim.g.maplocalleader = "," -- enables default <localleader> maps too
     end,
     config = function()
       vim.api.nvim_create_autocmd("FileType", {
