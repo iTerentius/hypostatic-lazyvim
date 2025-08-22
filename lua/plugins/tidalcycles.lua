@@ -11,7 +11,7 @@ return {
       vim.g.tidal_boot = vim.fn.expand("~/Music/tidal/_boot/BootTidal.hs")
       vim.g.tidal_boot_fallback = vim.g.tidal_boot
       vim.g.tidal_target = "terminal" -- or "tmux"
-      vim.g.maplocalleader = "," -- enables default <localleader> maps too
+      -- vim.g.maplocalleader = "," -- enables default <localleader> maps too
     end,
     config = function()
       vim.api.nvim_create_autocmd("FileType", {
@@ -20,7 +20,7 @@ return {
           -- free Ctrl-H (plugin maps hush to <C-h> by default)
           pcall(vim.keymap.del, "n", "<C-h>", { buffer = ev.buf })
           -- put hush somewhere else
-          vim.keymap.set("n", "<leader>th", ":TidalHush<CR>", { buffer = ev.buf, silent = true, desc = "Tidal: Hush" })
+          vim.keymap.set("n", "<leader>h", ":TidalHush<CR>", { buffer = ev.buf, silent = true, desc = "Tidal: Hush" })
         end,
       })
     end,
