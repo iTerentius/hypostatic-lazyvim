@@ -2,7 +2,7 @@ return {
   "tiagovla/tokyodark.nvim",
   opts = {
     -- custom options here
-    transparent_background = false, -- set background to transparent
+    transparent_background = true, -- set background to transparent
     gamma = 1.00, -- adjust the brightness of the theme
     styles = {
       comments = { italic = false }, -- style for comments
