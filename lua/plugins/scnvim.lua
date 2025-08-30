@@ -20,7 +20,7 @@ return {
           force_ft_supercollider = true,
         },
         postwin = {
-          float = { enabled = false },
+          float = { enabled = false }, -- split mode
           highlight = true,
           horizontal = false,
           direction = "right",
@@ -52,6 +52,115 @@ return {
           ["<F2>"] = map_expr("s.meter"),
         },
       })
+
+      -------------------------------------------------------------------
+      -- ⬇⬇ Added: Post window styling + custom word highlights (split) ⬇⬇
+      -------------------------------------------------------------------
+      do
+        local set_hl = vim.api.nvim_set_hl
+
+        -- 1) Define highlight groups (link to tokyodark groups when possible)
+        set_hl(0, "SCPostNormal", { link = "Normal" })
+        set_hl(0, "SCPostWinSep", { link = "WinSeparator" })
+        set_hl(0, "SCPostSuccess", { link = "DiagnosticOk", bold = true })
+        set_hl(0, "SCPostWarn", { link = "DiagnosticWarn", bold = true })
+        set_hl(0, "SCPostError", { link = "DiagnosticError", bold = true })
+        set_hl(0, "SCPostNote", { link = "Title", italic = true, bold = true })
+
+        -- 2) Detect the SCNvim post buffer (name or filetype)
+        local function is_postbuf(buf)
+          if not vim.api.nvim_buf_is_valid(buf) then
+            return false
+          end
+          local ft = vim.bo[buf].filetype
+          if ft == "scnvim_postwin" or ft == "supercollider.post" then
+            return true
+          end
+          local name = vim.api.nvim_buf_get_name(buf)
+          return name:match("SCNvim Post") ~= nil
+        end
+
+        -- 3) Style only the post window (works for splits)
+        vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
+          callback = function(args)
+            local buf, win = args.buf, vim.api.nvim_get_current_win()
+            if not is_postbuf(buf) then
+              return
+            end
+            vim.wo[win].winhl = table.concat({
+              "Normal:SCPostNormal",
+              "NormalNC:SCPostNormal",
+              "WinSeparator:SCPostWinSep",
+              "EndOfBuffer:NonText", -- hide tildes; change if you want them visible
+            }, ",")
+            vim.wo[win].wrap = true
+          end,
+        })
+
+        -- 4) Your custom words to color/bold/etc. (Lua patterns; \<WORD\> = whole word)
+        local WORDS = {
+          { pattern = [[\<OK\>\|\<SUCCESS\>\|\<booted\>]], group = "SCPostSuccess", prio = 15 },
+          { pattern = [[\<WARN\>\|\<WARNING\>\|\<Deprecation\>]], group = "SCPostWarn", prio = 15 },
+          { pattern = [[\<ERROR\>\|\<FAIL\>\|\<DoesNotUnderstand\>]], group = "SCPostError", prio = 15 },
+          { pattern = [[\<s.boot\>\|\<s.meter\>\|\<scsynth\>]], group = "SCPostNote", prio = 10 },
+          { pattern = [[\<cc\>]], group = "SCPostNote", prio = 10 },
+
+          -- Add your own:
+          -- { pattern = [[\<UGen\>]], group = "SCPostNote", prio = 10 },
+        }
+
+        local function add_matches(win, buf)
+          if not is_postbuf(buf) then
+            return
+          end
+          vim.w[win].scpost_match_ids = {}
+          for _, w in ipairs(WORDS) do
+            local id = vim.fn.matchadd(w.group, w.pattern, w.prio or 10)
+            table.insert(vim.w[win].scpost_match_ids, id)
+          end
+        end
+
+        local function clear_matches(win)
+          if not vim.w[win].scpost_match_ids then
+            return
+          end
+          for _, id in ipairs(vim.w[win].scpost_match_ids) do
+            pcall(vim.fn.matchdelete, id)
+          end
+          vim.w[win].scpost_match_ids = nil
+        end
+
+        vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
+          callback = function(args)
+            local buf, win = args.buf, vim.api.nvim_get_current_win()
+            if is_postbuf(buf) then
+              clear_matches(win)
+              add_matches(win, buf)
+            end
+          end,
+        })
+
+        vim.api.nvim_create_autocmd({ "WinClosed", "BufWipeout" }, {
+          callback = function(args)
+            local win = tonumber(args.match) or 0
+            if win ~= 0 then
+              clear_matches(win)
+            end
+          end,
+        })
+
+        -- 5) Ad-hoc command: :SCPostHi WORD [GroupName]
+        vim.api.nvim_create_user_command("SCPostHi", function(opts)
+          local word = vim.fn.escape(opts.fargs[1] or "", [[\]])
+          local group = opts.fargs[2] or "SCPostNote"
+          local pat = ([[\<%s\>]]):format(word)
+          local win = vim.api.nvim_get_current_win()
+          vim.fn.matchadd(group, pat, 12)
+        end, { nargs = "+" })
+      end
+      -------------------------------------------------------------------
+      -- ⬆⬆ Added section ends here ⬆⬆
+      -------------------------------------------------------------------
 
       -----------------------------------------------------------------
       -- Floating-window SCDoc override (robust, no syntax tricks)
