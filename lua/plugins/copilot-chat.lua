@@ -13,6 +13,7 @@ return {
       window = {
         width = 0.4,
       },
+      context = "project",
     }
   end,
 
@@ -62,6 +63,7 @@ return {
     local chat = require("CopilotChat")
     chat.setup(opts)
 
+    
     -- Buffer-local tweaks & submit key inside the CopilotChat buffer
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "copilot-chat",
