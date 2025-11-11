@@ -26,3 +26,8 @@ vim.keymap.set("t", "<C-Up>", "<cmd>resize -2<CR>")
 vim.keymap.set("t", "<C-Down>", "<cmd>resize +2<CR>")
 vim.keymap.set("t", "<C-Left>", "<cmd>vertical resize -2<CR>")
 vim.keymap.set("t", "<C-Right>", "<cmd>vertical resize +2<CR>")
+
+-- Move current buffer left/right
+-- vim.keymap.set("n", "<C-h>", "<cmd>BufferLineMovePrev<CR>", { desc = "Move buffer left" })
+-- vim.keymap.set("n", "<C-l>", "<cmd>BufferLineMoveNext<CR>", { desc = "Move buffer right" })
+
