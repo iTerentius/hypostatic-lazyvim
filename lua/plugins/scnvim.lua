@@ -34,7 +34,7 @@ return {
         },
         eval = { flash = { duration = 100, repeats = 2 } },
 
-        -- === KEYMAPS (from your last working file) ===
+        -- keymaps
         keymaps = {
           ["<M-e>"] = map("editor.send_line", { "i", "n" }),
           ["<C-e>"] = {
@@ -54,12 +54,12 @@ return {
       })
 
       -------------------------------------------------------------------
-      -- ⬇⬇ Added: Post window styling + custom word highlights (split) ⬇⬇
+      -- post window styling and custom word highlights
       -------------------------------------------------------------------
       do
         local set_hl = vim.api.nvim_set_hl
 
-        -- 1) Define highlight groups (link to tokyodark groups when possible)
+        -- highlight groups
         set_hl(0, "SCPostNormal", { link = "Normal" })
         set_hl(0, "SCPostWinSep", { link = "WinSeparator" })
         set_hl(0, "SCPostSuccess", { link = "DiagnosticOk", bold = true })
@@ -67,7 +67,7 @@ return {
         set_hl(0, "SCPostError", { link = "DiagnosticError", bold = true })
         set_hl(0, "SCPostNote", { link = "Title", italic = true, bold = true })
 
-        -- 2) Detect the SCNvim post buffer (name or filetype)
+        -- detect post buffer
         local function is_postbuf(buf)
           if not vim.api.nvim_buf_is_valid(buf) then
             return false
@@ -80,10 +80,11 @@ return {
           return name:match("SCNvim Post") ~= nil
         end
 
-        -- 3) Style only the post window (works for splits)
+        -- style post window
         vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
           callback = function(args)
-            local buf, win = args.buf, vim.api.nvim_get_current_win()
+            local buf = args.buf
+            local win = vim.api.nvim_get_current_win()
             if not is_postbuf(buf) then
               return
             end
@@ -91,22 +92,19 @@ return {
               "Normal:SCPostNormal",
               "NormalNC:SCPostNormal",
               "WinSeparator:SCPostWinSep",
-              "EndOfBuffer:NonText", -- hide tildes; change if you want them visible
+              "EndOfBuffer:NonText",
             }, ",")
             vim.wo[win].wrap = true
           end,
         })
 
-        -- 4) Your custom words to color/bold/etc. (Lua patterns; \<WORD\> = whole word)
+        -- keywords
         local WORDS = {
           { pattern = [[\<OK\>\|\<SUCCESS\>\|\<booted\>]], group = "SCPostSuccess", prio = 15 },
           { pattern = [[\<WARN\>\|\<WARNING\>\|\<Deprecation\>]], group = "SCPostWarn", prio = 15 },
           { pattern = [[\<ERROR\>\|\<FAIL\>\|\<DoesNotUnderstand\>]], group = "SCPostError", prio = 15 },
           { pattern = [[\<s.boot\>\|\<s.meter\>\|\<scsynth\>]], group = "SCPostNote", prio = 10 },
           { pattern = [[\<cc\>]], group = "SCPostNote", prio = 10 },
-
-          -- Add your own:
-          -- { pattern = [[\<UGen\>]], group = "SCPostNote", prio = 10 },
         }
 
         local function add_matches(win, buf)
@@ -132,7 +130,8 @@ return {
 
         vim.api.nvim_create_autocmd({ "BufWinEnter", "WinEnter" }, {
           callback = function(args)
-            local buf, win = args.buf, vim.api.nvim_get_current_win()
+            local buf = args.buf
+            local win = vim.api.nvim_get_current_win()
             if is_postbuf(buf) then
               clear_matches(win)
               add_matches(win, buf)
@@ -149,7 +148,6 @@ return {
           end,
         })
 
-        -- 5) Ad-hoc command: :SCPostHi WORD [GroupName]
         vim.api.nvim_create_user_command("SCPostHi", function(opts)
           local word = vim.fn.escape(opts.fargs[1] or "", [[\]])
           local group = opts.fargs[2] or "SCPostNote"
@@ -158,12 +156,9 @@ return {
           vim.fn.matchadd(group, pat, 12)
         end, { nargs = "+" })
       end
-      -------------------------------------------------------------------
-      -- ⬆⬆ Added section ends here ⬆⬆
-      -------------------------------------------------------------------
 
       -----------------------------------------------------------------
-      -- Floating-window SCDoc override (robust, no syntax tricks)
+      -- floating SCDoc override
       -----------------------------------------------------------------
       local ok_help, help = pcall(require, "scnvim.help")
       if ok_help and help and help.on_open and type(help.on_open.replace) == "function" then
@@ -177,7 +172,6 @@ return {
             return
           end
 
-          -- Normalize file:// URI to a path and read the rendered text
           local path = uri:gsub("^file://", "")
           path = vim.fn.fnamemodify(path, ":p")
           local ok_read, lines = pcall(vim.fn.readfile, path)
@@ -186,14 +180,13 @@ return {
             return
           end
 
-          -- Create scratch buffer and open centered float
           local buf = vim.api.nvim_create_buf(false, true)
           vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
           vim.bo[buf].bufhidden = "wipe"
           vim.bo[buf].buftype = "nofile"
           vim.bo[buf].swapfile = false
           vim.bo[buf].modifiable = false
-          vim.bo[buf].filetype = "help" -- or "markdown"
+          vim.bo[buf].filetype = "help"
 
           local width = math.floor(vim.o.columns * 0.6)
           local height = math.floor(vim.o.lines * 0.7)
@@ -211,7 +204,6 @@ return {
           })
           vim.wo[win].wrap = true
 
-          -- Jump to first matching line, if any
           if pattern and #pattern > 0 then
             for i, l in ipairs(lines) do
               if l:find(pattern, 1, true) then
@@ -221,7 +213,6 @@ return {
             end
           end
 
-          -- Quick close (q)
           vim.keymap.set({ "n", "i" }, "q", function()
             pcall(vim.api.nvim_win_close, win, true)
           end, { buffer = buf, nowait = true, silent = true })
@@ -229,7 +220,18 @@ return {
       end
 
       -----------------------------------------------------------------
-      -- Buffer bootstrap: tags wiring, K mapping, manual popup key
+      -- SCAlignComma: align lists on commas using Tabularize
+      -----------------------------------------------------------------
+      -- vim.api.nvim_create_user_command("SCAlignComma", function(opts)
+      --   if opts.range > 0 then
+      --     vim.cmd(('%d,%dTabularize /,\\zs'):format(opts.line1, opts.line2))
+      --   else
+      --     vim.cmd('Tabularize /,\\zs')
+      --   end
+      -- end, { range = true })
+
+      -----------------------------------------------------------------
+      -- buffer bootstrap: tags, doc keymaps, comma grid, align maps
       -----------------------------------------------------------------
       local function set_sc_doc_key(buf)
         pcall(vim.keymap.del, "n", "K", { buffer = buf })
@@ -268,7 +270,7 @@ return {
           end
           vim.bo[buf].tagfunc = nil
 
-          -- Manual completion popup for blink.cmp
+          -- completion popup for blink.cmp
           vim.keymap.set("i", "<C-M-Space>", function()
             local ok_b, blink = pcall(require, "blink.cmp")
             if ok_b then
@@ -276,7 +278,7 @@ return {
             end
           end, { buffer = buf, desc = "Completion: show menu" })
 
-          -- Neutralize <C-Space>/<C-@> in SC buffers (often enter Visual)
+          -- neutralize Ctrl-Space variants
           for _, lhs in ipairs({ "<C-Space>", "<C-@>" }) do
             pcall(vim.keymap.del, "i", lhs, { buffer = buf })
             pcall(vim.keymap.del, "n", lhs, { buffer = buf })
@@ -284,6 +286,30 @@ return {
             pcall(vim.keymap.del, "s", lhs, { buffer = buf })
             vim.keymap.set({ "n", "i", "v", "s" }, lhs, "<Nop>", { buffer = buf, silent = true })
           end
+
+          -- insert comma + Tab for pattern grid alignment
+          vim.keymap.set(
+            "i",
+            ",",
+            ",\t",
+            { buffer = buf, noremap = true, silent = true }
+          )
+
+          -- align lists on commas via SCAlignComma
+        vim.keymap.set(
+          "n",
+          "<leader>a,",
+          ":.Tabularize /,\\zs<CR>",
+          { buffer = buf, noremap = true, silent = true, desc = "Align SC list by comma (line)" }
+        )
+
+        -- VISUAL mode: align exactly the selected lines
+        vim.keymap.set(
+          "v",
+          "<leader>a,",
+          ":Tabularize /,\\zs<CR>",
+          { buffer = buf, noremap = true, silent = true, desc = "Align SC list by comma (selection)" }
+        )
 
           set_sc_doc_key(buf)
           set_sc_doc_prompt_key(buf)
@@ -304,7 +330,7 @@ return {
   },
 
   -------------------------------------------------------------------
-  -- 2) lualine: show scsynth status when editing SC files
+  -- lualine: show scsynth status when editing SC files
   -------------------------------------------------------------------
   {
     "nvim-lualine/lualine.nvim",
@@ -324,7 +350,7 @@ return {
   },
 
   -------------------------------------------------------------------
-  -- 3) Blink + compat + tags provider
+  -- Blink + compat + tags provider
   -------------------------------------------------------------------
   { "saghen/blink.compat", version = "2.*", opts = {} },
   { "quangnguyen30192/cmp-nvim-tags", ft = "supercollider" },
@@ -337,7 +363,6 @@ return {
     opts = function(_, opts)
       opts = opts or {}
 
-      -- Auto-show while typing and preview selection
       opts.completion = vim.tbl_deep_extend("force", opts.completion or {}, {
         trigger = { show_on_keyword = true, show_on_trigger_character = true },
         menu = { auto_show = true },
@@ -345,13 +370,11 @@ return {
         documentation = { auto_show = true, auto_show_delay_ms = 250 },
       })
 
-      -- Keys: keep your Ctrl+Meta+Space, add Ctrl+L as a reliable fallback
       opts.keymap = opts.keymap or { preset = "enter" }
       opts.keymap["<C-space>"] = false
       opts.keymap["<C-M-Space>"] = { "show" }
       opts.keymap["<C-l>"] = { "show" }
 
-      -- Enable the nvim-cmp “tags” source via blink.compat
       opts.sources = opts.sources or {}
       opts.sources.providers = vim.tbl_extend("force", opts.sources.providers or {}, {
         tags = {
@@ -363,7 +386,6 @@ return {
       })
       opts.sources.compat = vim.tbl_extend("force", opts.sources.compat or {}, { "tags" })
 
-      -- Prefer these sources for SuperCollider (NO ctx function!)
       opts.sources.default = opts.sources.default or { "lsp", "path", "snippets", "buffer" }
       opts.sources.per_filetype = opts.sources.per_filetype or {}
       opts.sources.per_filetype.supercollider = { "tags", "snippets", "buffer", "path" }
