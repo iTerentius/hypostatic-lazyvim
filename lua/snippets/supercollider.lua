@@ -1,64 +1,64 @@
+-- ~/.config/nvim/lua/snippets/supercollider.lua
+-- 2025-11-22: Pdefn snippets (newline-safe for LuaSnip)
+
 local ls = require("luasnip")
-local s = ls.snippet
-local i = ls.insert_node
-local fmt = require("luasnip.extras.fmt").fmt
+local s  = ls.snippet
+local t  = ls.text_node
+local i  = ls.insert_node
 
 return {
-  -- 808 bass-drum Pdef scaffold + LCXL bind
-  s(
-    "bd808",
-    fmt(
-      [[
-~loadSamplesRecursive.("{root}{subpath}");
-(
-~{var} = ~samplesTree.at(\bass_drums).asArray[0];
-Pdef(\{name}).quant = {quant};
-Pdef(\{name},
-    ~pBuf.(
-        Pbind(
-            \buf,    ~{var},          // Buffer object
-            \bufnum, Pkey(\buf),      // use Buffer’s bufnum
-            \dur,    Pbjorklund2({k}, {n})/{div},
-            \amp,    {amp},
-            \rate,   {rate},
-            \out,    ~p{name}.inbus.index
-        )
-    )
-);
-~lcxlBindPdef.(\{bindkey}, \{name});
-)
-~lcxlUnbindPdef.(\{bindkey}, \{name});
-Pdef(\{name}).play;
-Pdef(\{name}).stop({stopfade});
-Pdef(\{name}).clear;
-]],
-      {
-        root = i(1, "~/Music/supercollider/_samples/"),
-        subpath = i(2, "808s_by_SHD/808_kit/"),
-        var = i(3, "bd1"),
-        name = i(4, "bd1"),
-        quant = i(5, "1"),
-        k = i(6, "3"),
-        n = i(7, "8"),
-        div = i(8, "4"),
-        amp = i(9, "1.0"),
-        rate = i(10, "1"),
-        bindkey = i(11, "b0_s1_p"),
-        stopfade = i(12, "3"),
-      }
-    )
-  ),
+  -- Pdefn + Pseq pattern block with editable name, list, repeat count
+  s("pdefn", {
+    t({ "Pdefn(\\", "" }),
+    i(1, "name"),
+    t({ ", Pseq([", "  " }),
+    i(2, "0, 1, 0.25, 0"),
+    t({ "", "], " }),
+    i(3, "inf"),
+    t("));"),
+  }),
+
+  -- Multi-line aligned-grid version (name stays on first line; padded grid)
+  s("pdefndm", {
+    t("Pdefn(\\"),
+    i(1, "name"),
+    t({ ", Pseq([", "  " }),
+
+    -- row 1 (pre-padded columns)
+    i(2, "0,   0,   0,   0,   0,   0,   0,   0"),
+    t({ ",", "  " }),
+
+    -- row 2 (pre-padded columns)
+    i(3, "0,   0,   0,   0,   0,   0,   0,   0"),
+    t({ "", "], " }),
+
+    i(4, "inf"),
+    t("));"),
+  }),
+
+  s("pdefnds", {
+    t("Pdefn(\\"),
+    i(1, "name"),
+    t(" , Pseq([ 0,   0,    0,    0,      0,    0,    0,    0,    ],"),
+    i(2, "inf"),
+    t("));"),
+  }),
+
+  s("pbindef-midi", {
+    t({"(", "Pbindef(\\"}),
+    i(1, "name"),
+    t({
+        ", ",
+        "  \\type,      \\midi,",
+        "  \\midiout,   ~mOut,",
+        "  \\chan,      0,",
+        "  \\amp,       1,",
+        "  \\octave,    3,",
+        "  \\degree,    0,",
+        "  \\dur,       0.25,",
+        "));",
+        ")"
+    }),
+  }),
 }
--- return {
---   -- basic test snippet
---   s("sctest", fmt([[
---   (
---   // hello snippet
---   "Loaded snippet OK!".postln;
---   ~{} = SynthDef("{}", {{ |out=0| Out.ar(out, SinOsc.ar(440, 0, 0.1)) }}).add;
---   )
---   ]], {
---     i(1, "testSynth"),
---     i(2, "testSynth"),
---   })),
--- }
+

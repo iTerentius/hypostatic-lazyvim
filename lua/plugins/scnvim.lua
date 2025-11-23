@@ -1,4 +1,6 @@
 -- lua/plugins/scnvim.lua
+-- 2025-11-22 full patched version: SC buffer-local <Tab> expands LuaSnip snippets
+
 return {
   -------------------------------------------------------------------
   -- 1) SuperCollider frontend
@@ -220,17 +222,6 @@ return {
       end
 
       -----------------------------------------------------------------
-      -- SCAlignComma: align lists on commas using Tabularize
-      -----------------------------------------------------------------
-      -- vim.api.nvim_create_user_command("SCAlignComma", function(opts)
-      --   if opts.range > 0 then
-      --     vim.cmd(('%d,%dTabularize /,\\zs'):format(opts.line1, opts.line2))
-      --   else
-      --     vim.cmd('Tabularize /,\\zs')
-      --   end
-      -- end, { range = true })
-
-      -----------------------------------------------------------------
       -- buffer bootstrap: tags, doc keymaps, comma grid, align maps
       -----------------------------------------------------------------
       local function set_sc_doc_key(buf)
@@ -288,31 +279,26 @@ return {
           end
 
           -- insert comma + Tab for pattern grid alignment
+          vim.keymap.set("i", ",", ",\t", { buffer = buf, noremap = true, silent = true })
+
+          -- align lists on commas (requires Tabularize plugin)
           vim.keymap.set(
-            "i",
-            ",",
-            ",\t",
-            { buffer = buf, noremap = true, silent = true }
+            "n",
+            "<leader>a,",
+            ":.Tabularize /,\\zs<CR>",
+            { buffer = buf, noremap = true, silent = true, desc = "Align SC list by comma (line)" }
           )
-
-          -- align lists on commas via SCAlignComma
-        vim.keymap.set(
-          "n",
-          "<leader>a,",
-          ":.Tabularize /,\\zs<CR>",
-          { buffer = buf, noremap = true, silent = true, desc = "Align SC list by comma (line)" }
-        )
-
-        -- VISUAL mode: align exactly the selected lines
-        vim.keymap.set(
-          "v",
-          "<leader>a,",
-          ":Tabularize /,\\zs<CR>",
-          { buffer = buf, noremap = true, silent = true, desc = "Align SC list by comma (selection)" }
-        )
+          vim.keymap.set(
+            "v",
+            "<leader>a,",
+            ":Tabularize /,\\zs<CR>",
+            { buffer = buf, noremap = true, silent = true, desc = "Align SC list by comma (selection)" }
+          )
 
           set_sc_doc_key(buf)
           set_sc_doc_prompt_key(buf)
+
+          -- 2025-11-22 force LuaSnip expansion on Tab in SC buffers
         end,
       })
 
@@ -366,11 +352,16 @@ return {
       opts.completion = vim.tbl_deep_extend("force", opts.completion or {}, {
         trigger = { show_on_keyword = true, show_on_trigger_character = true },
         menu = { auto_show = true },
-        list = { selection = { preselect = true, auto_insert = true } },
+        list = { selection = { preselect = false, auto_insert = false } },
         documentation = { auto_show = true, auto_show_delay_ms = 250 },
       })
 
-      opts.keymap = opts.keymap or { preset = "enter" }
+      -- 2025-11-22: tell blink to use LuaSnip (NOT vim.snippet)
+      opts.snippets = { preset = "luasnip" }
+
+      -- Super-tab: snippet expand/jump → completion nav → fallback
+      -- Keymaps: blink must NOT own <Tab>; SC ftplugin handles snippets/navigation
+      opts.keymap = { preset = "none" }
       opts.keymap["<C-space>"] = false
       opts.keymap["<C-M-Space>"] = { "show" }
       opts.keymap["<C-l>"] = { "show" }
@@ -389,6 +380,16 @@ return {
       opts.sources.default = opts.sources.default or { "lsp", "path", "snippets", "buffer" }
       opts.sources.per_filetype = opts.sources.per_filetype or {}
       opts.sources.per_filetype.supercollider = { "tags", "snippets", "buffer", "path" }
+
+      -- Ensure SC filetype uses sources in the correct order
+      opts.sources = opts.sources or {}
+      opts.sources.per_filetype = opts.sources.per_filetype or {}
+      opts.sources.per_filetype.supercollider = {
+        "tags",
+        "snippets",
+        "buffer",
+        "path",
+      }
 
       return opts
     end,

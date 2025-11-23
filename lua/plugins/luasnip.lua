@@ -1,30 +1,51 @@
 -- ~/.config/nvim/lua/plugins/luasnip.lua
+-- 2025-11-22: single canonical LuaSnip spec for LazyVim + SCNvim
+
 return {
   "L3MON4D3/LuaSnip",
   dependencies = { "rafamadriz/friendly-snippets" },
-  -- event = "InsertEnter", -- optional lazy-load
+  -- build = "make install_jsregexp", -- optional; improves regex snippet triggers
   config = function()
     local ok_ls, luasnip = pcall(require, "luasnip")
     if not ok_ls then
       return
     end
 
-    -- VSCode-style community + your JSON
-    local ok_vsc, vsc = pcall(require, "luasnip.loaders.from_vscode")
-    if ok_vsc then
-      vsc.lazy_load()
-      vsc.lazy_load({ paths = "~/.config/nvim/snippets" })
+    -- sane defaults; doesn't affect blink keymaps
+    luasnip.config.setup({
+      history = true,
+      updateevents = "TextChanged,TextChangedI",
+      enable_autosnippets = false,
+      region_check_events = "InsertEnter",
+      delete_check_events = "TextChanged,InsertLeave",
+    })
+
+    ------------------------------------------------------------------------
+    -- 1. Load community VSCode-style snippets + your JSON snippets
+    ------------------------------------------------------------------------
+    local ok_vscode, vscode_loader = pcall(require, "luasnip.loaders.from_vscode")
+    if ok_vscode then
+      vscode_loader.lazy_load() -- friendly-snippets
+      vscode_loader.lazy_load({
+        paths = vim.fn.expand("~/.config/nvim/snippets"),
+      })
     end
 
-    -- 🔴 This is what loads bd808:
+    ------------------------------------------------------------------------
+    -- 2. Load your Lua-format snippets
+    -- You said supercollider.lua is in ~/.config/nvim/lua/snippets/
+    ------------------------------------------------------------------------
     local ok_lua, lua_loader = pcall(require, "luasnip.loaders.from_lua")
     if ok_lua then
-      lua_loader.load({ paths = "~/.config/nvim/lua/snippets" })
-      -- Or restrict to the filetype if you prefer:
-      -- lua_loader.load({ paths = "~/.config/nvim/lua/snippets", include = { "supercollider" } })
+      lua_loader.lazy_load({
+        paths = vim.fn.expand("~/.config/nvim/lua/snippets"),
+        -- include = { "supercollider" }, -- uncomment to restrict if desired
+      })
     end
 
-    -- SCNvim-generated snippets
+    ------------------------------------------------------------------------
+    -- 3. Load SCNvim-generated snippets on SC buffers
+    ------------------------------------------------------------------------
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "supercollider",
       callback = function()
