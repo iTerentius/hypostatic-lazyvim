@@ -5,6 +5,7 @@ local ls = require("luasnip")
 local s  = ls.snippet
 local t  = ls.text_node
 local i  = ls.insert_node
+local parse  = ls.parser.parse_snippet
 
 return {
   -- Pdefn + Pseq pattern block with editable name, list, repeat count
@@ -39,7 +40,7 @@ return {
   s("pdefnds", {
     t("Pdefn(\\"),
     i(1, "name"),
-    t(" , Pseq([ 0,   0,    0,    0,      0,    0,    0,    0,    ],"),
+    t(" , Pseq([    0,   0,    0,    0,    0,    0,    0,    0,    ],"),
     i(2, "inf"),
     t("));"),
   }),
@@ -56,9 +57,30 @@ return {
         "  \\octave,    3,",
         "  \\degree,    0,",
         "  \\dur,       0.25,",
-        "));",
+        ");",
         ")"
     }),
   }),
+    ---------------------------------------------------------------------------
+    -- NEW: parser-based snippet (the “feed it a code block” builder version)
+    ---------------------------------------------------------------------------
+
+  parse("pdefmid", [[
+  (
+  Pdef(\\${1:name}, Pbind( 
+    \type,      \midi,
+    \midiout,   ~mOut,
+    \chan,      ${2:0},
+    \amp,       ${3:1},
+    \octave,    3,
+    \degree,    1,
+    \dur,       0.25,
+  ));
+  ~apcAssignPad.(${4:32}, \\${1});
+  ~lcxlBindPdef.(\\${5:b1_s1_p}, \\${1});
+  )
+  Pdef(\\${1}).play();
+  Pdef(\\${1}).stop;
+  ]]),
 }
 
