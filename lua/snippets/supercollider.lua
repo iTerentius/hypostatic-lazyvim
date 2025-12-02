@@ -82,5 +82,18 @@ return {
   Pdef(\\${1}).play();
   Pdef(\\${1}).stop;
   ]]),
+
+  parse("pbidefcc", [[
+  (
+  Pdef(\\${1:name}, Pbind(\type, \midi, \midiout, ~mOut, \chan, 1, \midicmd, \control,
+    \ctlNum, 1,
+    \control, Pwhite(0,   127,   inf),   
+    \dur, 0.25
+  ));
+  )
+  Pdef(\\${1}).play;
+  Pdef(\\${1}).stop;
+
+  ]]),
 }
 
