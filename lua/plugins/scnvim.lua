@@ -321,16 +321,29 @@ return {
   {
     "nvim-lualine/lualine.nvim",
     opts = function(_, opts)
+      -- Insert our component early in lualine_x
       local function sc_status()
         local ok, st = pcall(require, "scnvim.statusline")
-        return ok and (st.get_server_status() or "") or ""
+        if not ok then
+          return ""
+        end
+        local s = st.get_server_status() or ""
+        -- Optional: nice replacement of % with ♪
+        s = s:gsub("%%", "♪")
+        return s
       end
+
+      opts.sections = opts.sections or {}
+      opts.sections.lualine_x = opts.sections.lualine_x or {}
+
       table.insert(opts.sections.lualine_x, 1, {
         sc_status,
         cond = function()
           return vim.bo.filetype == "supercollider"
         end,
       })
+
+      return opts
     end,
     dependencies = { "davidgranstrom/scnvim" },
   },
