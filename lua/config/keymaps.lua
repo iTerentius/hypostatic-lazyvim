@@ -4,6 +4,7 @@
 --
 
 require("config.keymaps.tabgroups")
+require("config.keymaps.sc-splits")
 
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit Insert Mode" })
 vim.keymap.set("n", "<A-j>", ":m .+1<CR>==<CR>", { desc = "Move line down" })
@@ -33,4 +34,6 @@ vim.keymap.set("t", "<C-Right>", "<cmd>vertical resize +2<CR>")
 -- Move current buffer left/right
 -- vim.keymap.set("n", "<C-h>", "<cmd>BufferLineMovePrev<CR>", { desc = "Move buffer left" })
 -- vim.keymap.set("n", "<C-l>", "<cmd>BufferLineMoveNext<CR>", { desc = "Move buffer right" })
+vim.keymap.set("n", "<C-a>", "ggVG", { desc = "Select all" })
+vim.keymap.set({ "i", "v" }, "jk", "<Esc>", { silent = true })
 
