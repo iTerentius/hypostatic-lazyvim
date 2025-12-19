@@ -26,6 +26,25 @@ return {
       },
     },
         -- 3. KEYMAPPINGS (Kept conflict-free for you)
+    provider = "gemini",
+    
+    -- 2. PROVIDERS CONFIG
+    providers = {
+      gemini = {
+        model = "gemini-2.5-flash", 
+        temperature = 0,
+        max_tokens = 8192,
+      },
+      copilot = {
+        model = "gpt-4o-2024-08-06",
+        extra_request_body = {
+          temperature = 0,
+          max_tokens = 4096,
+        }
+      },
+    },
+
+    -- 3. KEYMAPPINGS
     mappings = {
       ask = "<leader>av",     -- Avante Chat
       edit = "<leader>ae",    -- Avante Edit
