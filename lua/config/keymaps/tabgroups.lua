@@ -10,8 +10,8 @@ map("n", "<leader>tq", "<cmd>tabclose<CR>",  { desc = "Tab: close current group"
 map("n", "<leader>to", "<cmd>tabonly<CR>",   { desc = "Tab: keep only this group" })
 
 -- Move between tab groups
-map("n", "<C-Right>", "<cmd>tabnext<CR>",    { desc = "Tab: next group" })
-map("n", "<C-Left>",  "<cmd>tabprevious<CR>",{ desc = "Tab: previous group" })
+map("n", "<C-M-Right>", "<cmd>tabnext<CR>",    { desc = "Tab: next group" })
+map("n", "<C-M-Left>",  "<cmd>tabprevious<CR>",{ desc = "Tab: previous group" })
 
 -- Direct jump: treat tab 1..9 as named groups
 for i = 1, 9 do
