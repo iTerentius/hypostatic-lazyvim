@@ -36,6 +36,9 @@ vim.keymap.set("t", "<C-Right>", "<cmd>vertical resize +2<CR>")
 -- vim.keymap.set("n", "<C-l>", "<cmd>BufferLineMoveNext<CR>", { desc = "Move buffer right" })
 vim.keymap.set("n", "<C-a>", "ggVG", { desc = "Select all" })
 vim.keymap.set({ "i", "v" }, "jk", "<Esc>", { silent = true })
+-- Wrap visual selection in ( ... ) for SuperCollider evaluation
+-- Recommended binding: <leader>bp (Block Parentheses)
+vim.keymap.set("x", "<leader>bp", 'c(<CR><C-r>"<CR>)<Esc>=`[', { desc = "Wrap Selection in ( )" })
 
 -- Remove default code lens mapping
 -- vim.keymap.del("n", "<leader>cc", { silent = true })

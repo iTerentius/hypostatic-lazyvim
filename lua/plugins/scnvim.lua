@@ -298,7 +298,19 @@ return {
           set_sc_doc_key(buf)
           set_sc_doc_prompt_key(buf)
 
-          -- 2025-11-22 force LuaSnip expansion on Tab in SC buffers
+          vim.keymap.set("i", "<Tab>", function()
+            local ok_ls, luasnip = pcall(require, 'luasnip')
+            if ok_ls and luasnip.expand_or_jumpable() then
+              return '<Plug>luasnip-expand-or-jump'
+            end
+            return '<Tab>'
+          end, {
+            buffer = bufnr,
+            expr = true,
+            noremap = true,
+            silent = true,
+            desc = "Tab: LuaSnip expand or jump",
+          })
         end,
       })
 

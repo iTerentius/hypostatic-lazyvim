@@ -21,6 +21,7 @@ syntax keyword SCLangPattern
       \ Prand Pxorand Pinterleave
       \ PdegreeToKey Pkey Pindex
       \ Pnary Pgeomw Pserp Pwrandp Rest
+      \ Place Ppatlace Psection
 
 " Highlights
 highlight default SCLangPdefn    guifg=#ff5555 gui=bold
