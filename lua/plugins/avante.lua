@@ -6,22 +6,21 @@ return {
   opts = {
     -- 1. Main Provider Selection
     provider = "claude",
-    
-    -- 2. CORRECTED CONFIGURATION STRUCTURE
-    -- Instead of `gemini = { ... }`, we now nest it under `providers`
+
+    -- 2. PROVIDERS CONFIG
     providers = {
       gemini = {
-        model = "gemini-2.5-flash", 
+        model = "gemini-2.5-flash",
         extra_request_body = {
           temperature = 0,
-          max_tokens = 4096, -- Reduce max tokens to lower API usage
+          max_tokens = 8192,
         },
       },
       copilot = {
         model = "gpt-4o-2024-08-06",
         extra_request_body = {
-          max_tokens = 4096,
           temperature = 0,
+          max_tokens = 4096,
         },
       },
       claude = {
@@ -33,24 +32,6 @@ return {
           temperature = 0.75,
           max_tokens = 8192,
         },
-      },
-    },
-        -- 3. KEYMAPPINGS (Kept conflict-free for you)
-    provider = "gemini",
-    
-    -- 2. PROVIDERS CONFIG
-    providers = {
-      gemini = {
-        model = "gemini-2.5-flash", 
-        temperature = 0,
-        max_tokens = 8192,
-      },
-      copilot = {
-        model = "gpt-4o-2024-08-06",
-        extra_request_body = {
-          temperature = 0,
-          max_tokens = 4096,
-        }
       },
     },
 
