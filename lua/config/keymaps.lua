@@ -37,3 +37,9 @@ vim.keymap.set("t", "<C-Right>", "<cmd>vertical resize +2<CR>")
 vim.keymap.set("n", "<C-a>", "ggVG", { desc = "Select all" })
 vim.keymap.set({ "i", "v" }, "jk", "<Esc>", { silent = true })
 
+-- Remove default code lens mapping
+-- vim.keymap.del("n", "<leader>cc", { silent = true })
+
+-- Optionally, remap code lens to something else
+vim.keymap.set("n", "<leader>lc", vim.lsp.codelens.run, { desc = "Run Code Lens" })
+
