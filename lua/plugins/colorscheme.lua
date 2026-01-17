@@ -8,7 +8,7 @@ return {
       comments = { italic = false }, -- style for comments
       keywords = { italic = false }, -- style for keywords
       identifiers = { italic = false }, -- style for identifiers
-      functions = {}, -- style for functions
+      functions = { bold = true }, -- style for functions
       variables = {}, -- style for variables
     },
     custom_highlights = {} or function(highlights, palette)

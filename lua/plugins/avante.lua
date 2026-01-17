@@ -5,24 +5,34 @@ return {
   version = false, 
   opts = {
     -- 1. Main Provider Selection
-    provider = "copilot",
+    provider = "claude",
     
     -- 2. CORRECTED CONFIGURATION STRUCTURE
     -- Instead of `gemini = { ... }`, we now nest it under `providers`
     providers = {
       gemini = {
-        -- The new standard as of Dec 2025
         model = "gemini-2.5-flash", 
-        -- If that fails (due to regional rollout), try "gemini-3-flash-preview"
-        -- or the powerful "gemini-3-pro" for complex architecture questions.
-        
-        temperature = 0,
-        max_tokens = 8192, -- Gemini 3 allows larger output tokens
+        extra_request_body = {
+          temperature = 0,
+          max_tokens = 4096, -- Reduce max tokens to lower API usage
+        },
       },
       copilot = {
-        model = "gpt-4o-2024-08-06", -- or "claude-3.5-sonnet" if you have it enabled in GitHub settings
-        max_tokens = 4096,
-        temperature = 0,
+        model = "gpt-4o-2024-08-06",
+        extra_request_body = {
+          max_tokens = 4096,
+          temperature = 0,
+        },
+      },
+      claude = {
+        endpoint = "https://api.anthropic.com",
+        model = "claude-sonnet-4-20250514",
+        api_key_name = "ANTHROPIC_API_KEY",
+        timeout = 30000,
+        extra_request_body = {
+          temperature = 0.75,
+          max_tokens = 8192,
+        },
       },
     },
         -- 3. KEYMAPPINGS (Kept conflict-free for you)
