@@ -190,20 +190,29 @@ return {
     -- Chat with buffer context
     { "<leader>ab", function()
       vim.cmd("CodeCompanionChat")
-      vim.api.nvim_feedkeys("/buffer\n", "n", false)
+      vim.defer_fn(function()
+        vim.cmd("startinsert")
+        vim.api.nvim_feedkeys("/buffer\n", "n", false)
+      end, 150)
     end, desc = "AI: Chat with Buffer", mode = "n" },
 
     -- Chat with file picker
     { "<leader>af", function()
       vim.cmd("CodeCompanionChat")
-      vim.api.nvim_feedkeys("/file\n", "n", false)
+      vim.defer_fn(function()
+        vim.cmd("startinsert")
+        vim.api.nvim_feedkeys("/file\n", "n", false)
+      end, 150)
     end, desc = "AI: Chat with File", mode = "n" },
 
-    -- Chat with RAG (project context) (changed from <leader>ar to avoid conflict with Avante)
+    -- Chat with symbols (project context) (changed from <leader>ar to avoid conflict with Avante)
     { "<leader>ag", function()
       vim.cmd("CodeCompanionChat")
-      vim.api.nvim_feedkeys("/rag\n", "n", false)
-    end, desc = "AI: Chat with RAG", mode = "n" },
+      vim.defer_fn(function()
+        vim.cmd("startinsert")
+        vim.api.nvim_feedkeys("/symbols\n", "n", false)
+      end, 150)
+    end, desc = "AI: Chat with Symbols", mode = "n" },
 
     -- Manually trigger project indexing
     { "<leader>aI", function()

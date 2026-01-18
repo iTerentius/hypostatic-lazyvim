@@ -40,7 +40,7 @@ return {
             win = {
               position = "right", -- vertical
               split = "right",
-              width = 0.4,        -- 40% of editor width
+              width = 0.2,        -- 40% of editor width
             },
           })
         end,
